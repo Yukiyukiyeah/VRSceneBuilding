@@ -59,7 +59,15 @@ public class TextObject : MonoBehaviour
                     //Debug.Log(string.Format("AlphatbetsPrefabs/{0}.prefab", letter));
                     try
                     {
-                        Object prefab = AssetDatabase.LoadAssetAtPath(string.Format("Assets/AlphabetsPrefabs/{0}.prefab", letter), typeof(GameObject));
+                        Object prefab;
+                        if ((letter >=65 &&letter<=90)||letter =='\''||letter == '-')
+                        {
+                            prefab = AssetDatabase.LoadAssetAtPath(string.Format("Assets/AlphabetsPrefabs/{0}.prefab", letter), typeof(GameObject));
+                        }
+                        else
+                        {
+                            prefab = AssetDatabase.LoadAssetAtPath(string.Format("Assets/AlphabetsPrefabs/l{0}.prefab", letter), typeof(GameObject));
+                        }                        
                         letterTransform = Instantiate(prefab, new Vector3(count*0.15f, 0, 0), Quaternion.Euler(0,180,0)) as GameObject;
                         //Debug.Log(letterTransform);
                         Transform parent = wordObject.transform;
