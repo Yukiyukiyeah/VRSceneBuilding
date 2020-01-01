@@ -20,32 +20,19 @@ public class TextObject : MonoBehaviour
     public float polarity { get; set; }
 
     private Object[] objectArray;
+    private GameObject sentenceObject;
     private GameObject wordObject;
     private GameObject letterTransform;
 
     void Awake()
     {
-        //LetterPrefab();
         WordPrefab();
     }
-    private void LetterPrefab()
-    {
-        string localPath = "Assets/Alphabets" + gameObject.name + ".prefab";
-
-        // Loop through every GameObject in the array above
-        foreach (GameObject gameObject in objectArray)
-        {
-            // Make sure the file name is unique, in case an existing Prefab has the same name.
-            localPath = AssetDatabase.GenerateUniqueAssetPath(localPath);
-
-            // Create the new Prefab.
-            PrefabUtility.SaveAsPrefabAssetAndConnect(gameObject, localPath, InteractionMode.UserAction);
-        }
-        
-    }
+    
 
     private void WordPrefab()
     {
+        //parse the json file
         FilePath = "../Text2VR/data/test_20191229.json";
         jsonString = File.ReadAllText(FilePath);
         JObject userText = JObject.Parse(jsonString);
@@ -56,35 +43,43 @@ public class TextObject : MonoBehaviour
         noun_phrases = jText["noun_phrases"].ToObject<List<string>>();
         sentences = jText["sentences"].ToObject<List<Sentence>>();
         polarity = (int)jText["polarity"];
+
+        //create text objects
         foreach (Sentence sentence in sentences)
         {
+            sentenceObject = new GameObject(string.Format("sentence{0}", sentence.id));
+            float wordLength = 0;
             foreach (string word in sentence.words)
             {
                 wordObject = new GameObject(string.Format("{0}", word));
                 //Instantiate(wordObject);
-                
+                int count = 0;
                 foreach (char letter in word)
                 {
                     //Debug.Log(string.Format("AlphatbetsPrefabs/{0}.prefab", letter));
                     try
                     {
                         Object prefab = AssetDatabase.LoadAssetAtPath(string.Format("Assets/AlphabetsPrefabs/{0}.prefab", letter), typeof(GameObject));
-                        letterTransform = Instantiate(prefab, new Vector3(2.0F, 0, 0), Quaternion.identity) as GameObject;
+                        letterTransform = Instantiate(prefab, new Vector3(count*0.15f, 0, 0), Quaternion.Euler(0,180,0)) as GameObject;
                         //Debug.Log(letterTransform);
                         Transform parent = wordObject.transform;
                         //Debug.Log("mama"+ parent);
                         letterTransform.transform.SetParent(parent);
-                        Debug.Log("my momo:"+letterTransform.transform.parent);
+                        //Debug.Log("my momo:"+letterTransform.transform.parent);
+                        count++;
                     }
                     catch(FileNotFoundException e)
                     {
 
-                    }
-                    
-                }           
-               
+                    }                                        
+                }
                 
+                wordObject.transform.position = new Vector3(wordLength, 0, 0);
+                wordObject.transform.SetParent(sentenceObject.transform);
+                wordLength += count * 0.15f + 0.2f;
+
             }
+            sentenceObject.transform.position += new Vector3(0, -sentence.id * 0.2f, 0);
         }
     }
 
@@ -95,8 +90,5 @@ public class TextObject : MonoBehaviour
         public float polarity;
         public List<string> words;
     }
-
-
-
-
+         
 }
